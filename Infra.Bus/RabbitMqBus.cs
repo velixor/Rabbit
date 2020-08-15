@@ -50,11 +50,11 @@ namespace Infra.Bus
             var subscriber = GetOrCreateSubscriber<TEvent>();
             var handlerType = typeof(THandler);
 
-            var isHandlerAdded = subscriber.Handlers.Add(handlerType);
+            var isHandlerAdded = subscriber.AddHandler(handlerType);
 
             if (!isHandlerAdded)
             {
-                throw new ArgumentException($"Handler Type {handlerType.Name} already registered for '{subscriber.EventName}'");
+                throw new ArgumentException($"Handler Type {handlerType.Name} already registered for '{subscriber.EventName}' or something gone wrong");
             }
 
             StartBasicConsume<TEvent>();
@@ -65,7 +65,7 @@ namespace Infra.Bus
             var eventType = typeof(TEvent);
 
             var subscriber = _subscribers.SingleOrDefault(x => x.EventType == eventType);
-            if (subscriber != default) return subscriber;
+            if (subscriber != null) return subscriber;
 
             subscriber = new Subscriber(typeof(TEvent));
             _subscribers.Add(subscriber);
@@ -110,20 +110,10 @@ namespace Infra.Bus
         private async Task ProcessEvent(string eventName, string message)
         {
             var subscriber = _subscribers.SingleOrDefault(x => x.EventName == eventName);
-            if (subscriber == default) return;
-
-            var eventHandlerType = typeof(IEventHandler<>).MakeGenericType(subscriber.EventType);
-            var handle = eventHandlerType.GetMethod("Handle");
-
-            var handlers = subscriber.Handlers
-                .Select(Activator.CreateInstance)
-                .Where(x => x != null);
+            if (subscriber == null) return;
 
             var @event = JsonSerializer.Deserialize(message, subscriber.EventType);
-            foreach (var handler in handlers)
-            {
-                await (Task) handle.Invoke(handler, new[] {@event});
-            }
+            await subscriber.Handle(@event);
         }
     }
 }
