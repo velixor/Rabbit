@@ -2,7 +2,7 @@
 
 namespace Domain.Core.Events
 {
-    public class Event
+    public abstract class Event
     {
         public DateTime Timestamp { get; protected set; }
 

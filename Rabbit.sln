@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Core", "Domain.Core\Domain.Core.csproj", "{67ECB012-578C-45DC-B81D-396D02697D1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infra.Bus", "Infra.Bus\Infra.Bus.csproj", "{28421840-9121-4786-A5AA-3DF5EC94F7DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,8 +24,13 @@ Global
 		{67ECB012-578C-45DC-B81D-396D02697D1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67ECB012-578C-45DC-B81D-396D02697D1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67ECB012-578C-45DC-B81D-396D02697D1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28421840-9121-4786-A5AA-3DF5EC94F7DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28421840-9121-4786-A5AA-3DF5EC94F7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28421840-9121-4786-A5AA-3DF5EC94F7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28421840-9121-4786-A5AA-3DF5EC94F7DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{67ECB012-578C-45DC-B81D-396D02697D1D} = {23B0962A-F0C7-476E-A944-30A55C290A31}
+		{28421840-9121-4786-A5AA-3DF5EC94F7DA} = {FD070477-2F3E-4ED3-A3A3-D5FA2F978FDD}
 	EndGlobalSection
 EndGlobal
