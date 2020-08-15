@@ -1,8 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Producer\Producer.csproj", "{BBA1AF86-38E9-46D6-BEBF-847D358B51FC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{23B0962A-F0C7-476E-A944-30A55C290A31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Consumer\Consumer.csproj", "{99C93C74-4AEE-4867-AE12-CDBF3A252AAD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra.Bus", "Infra.Bus", "{FD070477-2F3E-4ED3-A3A3-D5FA2F978FDD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra.IoC", "Infra.IoC", "{43F521AA-7B35-4380-BF2E-EB31EA756152}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microservices", "Microservices", "{830D7A0B-5E1E-48BF-A99F-455D664E8580}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{608C8F2F-6A44-47E6-A1F7-BB66A5FC2250}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Core", "Domain.Core\Domain.Core.csproj", "{67ECB012-578C-45DC-B81D-396D02697D1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,13 +18,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BBA1AF86-38E9-46D6-BEBF-847D358B51FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBA1AF86-38E9-46D6-BEBF-847D358B51FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBA1AF86-38E9-46D6-BEBF-847D358B51FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBA1AF86-38E9-46D6-BEBF-847D358B51FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99C93C74-4AEE-4867-AE12-CDBF3A252AAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99C93C74-4AEE-4867-AE12-CDBF3A252AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99C93C74-4AEE-4867-AE12-CDBF3A252AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99C93C74-4AEE-4867-AE12-CDBF3A252AAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67ECB012-578C-45DC-B81D-396D02697D1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67ECB012-578C-45DC-B81D-396D02697D1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67ECB012-578C-45DC-B81D-396D02697D1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67ECB012-578C-45DC-B81D-396D02697D1D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67ECB012-578C-45DC-B81D-396D02697D1D} = {23B0962A-F0C7-476E-A944-30A55C290A31}
 	EndGlobalSection
 EndGlobal
