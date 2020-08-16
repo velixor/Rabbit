@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Banking.Domain.Models;
 
 namespace Banking.Application
 {
     public interface IAccountService
     {
-        IEnumerable<Account> GetAccounts();
+        IQueryable<Account> GetAccounts();
     }
 }

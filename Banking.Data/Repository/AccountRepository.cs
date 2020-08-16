@@ -17,7 +17,7 @@ namespace Banking.Data.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public IEnumerable<Account> GetAccounts()
+        public IQueryable<Account> GetAccounts()
         {
             return _context.Accounts;
         }
