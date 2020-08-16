@@ -9,6 +9,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Banking.Application\Banking.Application.csproj" />
+      <ProjectReference Include="..\Banking.Data\Banking.Data.csproj" />
+      <ProjectReference Include="..\Banking.Domain\Banking.Domain.csproj" />
       <ProjectReference Include="..\Infra.Bus\Infra.Bus.csproj" />
     </ItemGroup>
 
