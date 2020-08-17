@@ -27,7 +27,7 @@ namespace Banking.Api
 
             services.AddDbContext<BankingDbContext>(opt => { opt.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")); });
 
-            services.RegisterBankingServices();
+            services.RegisterMicroservices();
 
             services.AddSwaggerGen(opt =>
             {
