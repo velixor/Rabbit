@@ -21,7 +21,13 @@ namespace Infra.IoC
     {
         public static void RegisterMicroservices(this IServiceCollection services)
         {
-            services.AddSingleton<IEventBus, RabbitMqBus>();
+            services.AddSingleton<IEventBus, RabbitMqBus>(sp =>
+            {
+                var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+                return new RabbitMqBus(sp.GetRequiredService<IMediator>(), scopeFactory);
+            });
+
+            services.AddTransient<TransferCreatedEventHandler>();
 
             RegisterBankingServices(services);
             RegisterTransferServices(services);

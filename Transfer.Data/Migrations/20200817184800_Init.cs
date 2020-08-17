@@ -7,9 +7,8 @@ namespace Transfer.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "TransferLogs",
-                columns: table => new
+            migrationBuilder.CreateTable("TransferLogs",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
@@ -17,16 +16,12 @@ namespace Transfer.Data.Migrations
                     ToAccount = table.Column<int>(nullable: false),
                     TransferAmount = table.Column<decimal>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TransferLogs", x => x.Id);
-                });
+                constraints: table => { table.PrimaryKey("PK_TransferLogs", x => x.Id); });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "TransferLogs");
+            migrationBuilder.DropTable("TransferLogs");
         }
     }
 }

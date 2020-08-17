@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Domain.Core.Bus;
 using Domain.Core.Commands;
 using Domain.Core.Events;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -16,13 +16,15 @@ namespace Infra.Bus
 {
     public sealed class RabbitMqBus : IEventBus
     {
-        private readonly IMediator _mediator;
-        private readonly Dictionary<string, List<Type>> _handlers;
         private readonly List<Type> _eventTypes;
+        private readonly Dictionary<string, List<Type>> _handlers;
+        private readonly IMediator _mediator;
+        private readonly IServiceScopeFactory _serviceFactory;
 
-        public RabbitMqBus(IMediator mediator)
+        public RabbitMqBus(IMediator mediator, IServiceScopeFactory serviceFactory)
         {
             _mediator = mediator;
+            _serviceFactory = serviceFactory ?? throw new ArgumentNullException(nameof(serviceFactory));
             _handlers = new Dictionary<string, List<Type>>();
             _eventTypes = new List<Type>();
         }
@@ -34,7 +36,7 @@ namespace Infra.Bus
 
         public void Publish<T>(T @event) where T : Event
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory {HostName = "localhost"};
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -47,7 +49,6 @@ namespace Infra.Bus
 
                 channel.BasicPublish("", eventName, null, body);
             }
-
         }
 
         public void Subscribe<T, TH>()
@@ -57,21 +58,11 @@ namespace Infra.Bus
             var eventName = typeof(T).Name;
             var handlerType = typeof(TH);
 
-            if (!_eventTypes.Contains(typeof(T)))
-            {
-                _eventTypes.Add(typeof(T));
-            }
+            if (!_eventTypes.Contains(typeof(T))) _eventTypes.Add(typeof(T));
 
-            if (!_handlers.ContainsKey(eventName))
-            {
-                _handlers.Add(eventName, new List<Type>());
-            }
+            if (!_handlers.ContainsKey(eventName)) _handlers.Add(eventName, new List<Type>());
 
-            if (_handlers[eventName].Any(s => s.GetType() == handlerType))
-            {
-                throw new ArgumentException(
-                    $"Handler Type {handlerType.Name} already is registered for '{eventName}'", nameof(handlerType));
-            }
+            if (_handlers[eventName].Any(s => s.GetType() == handlerType)) throw new ArgumentException($"Handler Type {handlerType.Name} already is registered for '{eventName}'", nameof(handlerType));
 
             _handlers[eventName].Add(handlerType);
 
@@ -80,7 +71,7 @@ namespace Infra.Bus
 
         private void StartBasicConsume<T>() where T : Event
         {
-            var factory = new ConnectionFactory()
+            var factory = new ConnectionFactory
             {
                 HostName = "localhost",
                 DispatchConsumersAsync = true
@@ -115,17 +106,19 @@ namespace Infra.Bus
 
         private async Task ProcessEvent(string eventName, string message)
         {
-            if(_handlers.ContainsKey(eventName))
+            if (_handlers.ContainsKey(eventName))
             {
+                using var scope = _serviceFactory.CreateScope();
+
                 var subscriptions = _handlers[eventName];
                 foreach (var subscription in subscriptions)
                 {
-                    var handler = Activator.CreateInstance(subscription);
+                    var handler = scope.ServiceProvider.GetService(subscription);
                     if (handler == null) continue;
                     var eventType = _eventTypes.SingleOrDefault(t => t.Name == eventName);
                     var @event = JsonConvert.DeserializeObject(message, eventType);
-                    var conreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
-                    await (Task)conreteType.GetMethod("Handle").Invoke(handler, new object[] { @event });
+                    var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
+                    await (Task) handlerType.GetMethod("Handle").Invoke(handler, new[] {@event})!;
                 }
             }
         }
