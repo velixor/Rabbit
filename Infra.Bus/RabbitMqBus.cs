@@ -52,10 +52,7 @@ namespace Infra.Bus
 
             var isHandlerAdded = subscriber.AddHandler(handlerType);
 
-            if (!isHandlerAdded)
-            {
-                throw new ArgumentException($"Handler Type {handlerType.Name} already registered for '{subscriber.EventName}' or something gone wrong");
-            }
+            if (!isHandlerAdded) throw new ArgumentException($"Handler Type {handlerType.Name} already registered for '{subscriber.EventName}' or something gone wrong");
 
             StartBasicConsume<TEvent>();
         }

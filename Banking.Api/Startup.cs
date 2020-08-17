@@ -44,10 +44,7 @@ namespace Banking.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
 
@@ -56,11 +53,8 @@ namespace Banking.Api
             app.UseAuthorization();
 
             app.UseSwagger();
-            app.UseSwaggerUI(opt =>
-            {
-                opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Banking Microservice V1");
-            });
-            
+            app.UseSwaggerUI(opt => { opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Banking Microservice V1"); });
+
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

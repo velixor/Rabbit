@@ -1,9 +1,12 @@
-﻿using Banking.Application;
+﻿using Banking.Application.Services;
 using Banking.Data.Context;
 using Banking.Data.Repository;
+using Banking.Domain.CommandHandlers;
+using Banking.Domain.Commands;
 using Banking.Domain.Interfaces;
 using Domain.Core.Bus;
 using Infra.Bus;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infra.IoC
@@ -17,6 +20,9 @@ namespace Infra.IoC
             // Data
             services.AddTransient<IAccountRepository, AccountRepository>();
             services.AddTransient<BankingDbContext>();
+
+            // Banking commands
+            services.AddTransient<IRequestHandler<CreateTransferCommand, bool>, TransferCommandHandler>();
 
             // Application
             services.AddTransient<IAccountService, AccountService>();

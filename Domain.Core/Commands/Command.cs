@@ -5,11 +5,11 @@ namespace Domain.Core.Commands
 {
     public abstract class Command : Message
     {
-       public DateTime Timestamp { get; protected set; }
+        protected Command()
+        {
+            Timestamp = DateTime.Now;
+        }
 
-       protected Command()
-       {
-           Timestamp = DateTime.Now;
-       }
+        public DateTime Timestamp { get; protected set; }
     }
 }

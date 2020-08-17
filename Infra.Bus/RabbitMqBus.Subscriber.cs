@@ -10,9 +10,6 @@ namespace Infra.Bus
     {
         private class Subscriber
         {
-            public Type EventType { get; }
-            public string EventName => EventType.Name;
-
             private readonly MethodInfo _handle;
             private readonly Dictionary<Type, object> _handlers;
 
@@ -22,6 +19,9 @@ namespace Infra.Bus
                 _handlers = new Dictionary<Type, object>();
                 _handle = GetHandlerMethod(eventType) ?? throw new ArgumentException($"Cannot get method 'Handle' for Event {eventType.Name}");
             }
+
+            public Type EventType { get; }
+            public string EventName => EventType.Name;
 
             private MethodInfo? GetHandlerMethod(Type eventType)
             {
@@ -42,10 +42,7 @@ namespace Infra.Bus
 
             public async Task Handle(object @event)
             {
-                foreach (var (_, handler) in _handlers)
-                {
-                    await ((Task) _handle.Invoke(handler, new[] {@event}))!;
-                }
+                foreach (var (_, handler) in _handlers) await ((Task) _handle.Invoke(handler, new[] {@event}))!;
             }
         }
     }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Banking.Application;
+using Banking.Application.Models;
+using Banking.Application.Services;
 using Banking.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,13 @@ namespace Banking.Api.Controllers
         public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
         {
             return await _accountService.GetAccounts().ToArrayAsync();
+        }
+
+        [HttpPost]
+        public IActionResult AddTransfer([FromBody] AccountTransfer accountTransfer)
+        {
+            _accountService.Transfer(accountTransfer);
+            return Ok(accountTransfer);
         }
     }
 }
