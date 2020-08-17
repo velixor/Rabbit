@@ -8,7 +8,12 @@ using Domain.Core.Bus;
 using Infra.Bus;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Transfer.Application.Interfaces;
+using Transfer.Application.Services;
 using Transfer.Data.Context;
+using Transfer.Data.Repository;
+using Transfer.Domain.EventHandlers;
+using Transfer.Domain.Events;
 
 namespace Infra.IoC
 {
@@ -16,7 +21,7 @@ namespace Infra.IoC
     {
         public static void RegisterMicroservices(this IServiceCollection services)
         {
-            services.AddTransient<IEventBus, RabbitMqBus>();
+            services.AddSingleton<IEventBus, RabbitMqBus>();
 
             RegisterBankingServices(services);
             RegisterTransferServices(services);
@@ -25,6 +30,9 @@ namespace Infra.IoC
         private static void RegisterTransferServices(IServiceCollection services)
         {
             services.AddTransient<TransferDbContext>();
+            services.AddTransient<ITransferRepository, TransferRepository>();
+            services.AddTransient<ITransferService, TransferService>();
+            services.AddTransient<IEventHandler<TransferCreatedEvent>, TransferCreatedEventHandler>();
         }
 
         private static void RegisterBankingServices(IServiceCollection services)

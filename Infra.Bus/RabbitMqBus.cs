@@ -8,21 +8,23 @@ using Domain.Core.Bus;
 using Domain.Core.Commands;
 using Domain.Core.Events;
 using MediatR;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Infra.Bus
 {
-    public sealed partial class RabbitMqBus : IEventBus
+    public sealed class RabbitMqBus : IEventBus
     {
-        private const string HostName = "localhost";
         private readonly IMediator _mediator;
-        private readonly List<Subscriber> _subscribers;
+        private readonly Dictionary<string, List<Type>> _handlers;
+        private readonly List<Type> _eventTypes;
 
         public RabbitMqBus(IMediator mediator)
         {
             _mediator = mediator;
-            _subscribers = new List<Subscriber>();
+            _handlers = new Dictionary<string, List<Type>>();
+            _eventTypes = new List<Type>();
         }
 
         public Task SendCommand<T>(T command) where T : Command
@@ -32,64 +34,72 @@ namespace Infra.Bus
 
         public void Publish<T>(T @event) where T : Event
         {
-            var connectionFactory = new ConnectionFactory {HostName = HostName};
-            using var connection = connectionFactory.CreateConnection();
-            using var channel = connection.CreateModel();
-
-            var eventName = @event.GetType().Name;
-            channel.QueueDeclare(eventName, exclusive: false, autoDelete: false);
-
-            var message = JsonSerializer.Serialize(@event);
-            var body = Encoding.UTF8.GetBytes(message);
-
-            channel.BasicPublish(string.Empty, eventName, true, null, body);
-        }
-
-        public void Subscribe<TEvent, THandler>() where TEvent : Event where THandler : IEventHandler<TEvent>
-        {
-            var subscriber = GetOrCreateSubscriber<TEvent>();
-            var handlerType = typeof(THandler);
-
-            var isHandlerAdded = subscriber.AddHandler(handlerType);
-
-            if (!isHandlerAdded) throw new ArgumentException($"Handler Type {handlerType.Name} already registered for '{subscriber.EventName}' or something gone wrong");
-
-            StartBasicConsume<TEvent>();
-        }
-
-        private Subscriber GetOrCreateSubscriber<TEvent>() where TEvent : Event
-        {
-            var eventType = typeof(TEvent);
-
-            var subscriber = _subscribers.SingleOrDefault(x => x.EventType == eventType);
-            if (subscriber != null) return subscriber;
-
-            subscriber = new Subscriber(typeof(TEvent));
-            _subscribers.Add(subscriber);
-
-            return subscriber;
-        }
-
-        private void StartBasicConsume<TEvent>() where TEvent : Event
-        {
-            var connectionFactory = new ConnectionFactory
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
             {
-                HostName = HostName,
+                var eventName = @event.GetType().Name;
+
+                channel.QueueDeclare(eventName, false, false, false, null);
+
+                var message = JsonConvert.SerializeObject(@event);
+                var body = Encoding.UTF8.GetBytes(message);
+
+                channel.BasicPublish("", eventName, null, body);
+            }
+
+        }
+
+        public void Subscribe<T, TH>()
+            where T : Event
+            where TH : IEventHandler<T>
+        {
+            var eventName = typeof(T).Name;
+            var handlerType = typeof(TH);
+
+            if (!_eventTypes.Contains(typeof(T)))
+            {
+                _eventTypes.Add(typeof(T));
+            }
+
+            if (!_handlers.ContainsKey(eventName))
+            {
+                _handlers.Add(eventName, new List<Type>());
+            }
+
+            if (_handlers[eventName].Any(s => s.GetType() == handlerType))
+            {
+                throw new ArgumentException(
+                    $"Handler Type {handlerType.Name} already is registered for '{eventName}'", nameof(handlerType));
+            }
+
+            _handlers[eventName].Add(handlerType);
+
+            StartBasicConsume<T>();
+        }
+
+        private void StartBasicConsume<T>() where T : Event
+        {
+            var factory = new ConnectionFactory()
+            {
+                HostName = "localhost",
                 DispatchConsumersAsync = true
             };
-            using var connection = connectionFactory.CreateConnection();
-            using var channel = connection.CreateModel();
 
-            var eventName = typeof(TEvent).Name;
+            var connection = factory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            var eventName = typeof(T).Name;
+
             channel.QueueDeclare(eventName, false, false, false, null);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
-            consumer.Received += ConsumerOnReceived;
+            consumer.Received += Consumer_Received;
 
             channel.BasicConsume(eventName, true, consumer);
         }
 
-        private async Task ConsumerOnReceived(object sender, BasicDeliverEventArgs e)
+        private async Task Consumer_Received(object sender, BasicDeliverEventArgs e)
         {
             var eventName = e.RoutingKey;
             var message = Encoding.UTF8.GetString(e.Body.ToArray());
@@ -98,19 +108,26 @@ namespace Infra.Bus
             {
                 await ProcessEvent(eventName, message).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // ignored
             }
         }
 
         private async Task ProcessEvent(string eventName, string message)
         {
-            var subscriber = _subscribers.SingleOrDefault(x => x.EventName == eventName);
-            if (subscriber == null) return;
-
-            var @event = JsonSerializer.Deserialize(message, subscriber.EventType);
-            await subscriber.Handle(@event);
+            if(_handlers.ContainsKey(eventName))
+            {
+                var subscriptions = _handlers[eventName];
+                foreach (var subscription in subscriptions)
+                {
+                    var handler = Activator.CreateInstance(subscription);
+                    if (handler == null) continue;
+                    var eventType = _eventTypes.SingleOrDefault(t => t.Name == eventName);
+                    var @event = JsonConvert.DeserializeObject(message, eventType);
+                    var conreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
+                    await (Task)conreteType.GetMethod("Handle").Invoke(handler, new object[] { @event });
+                }
+            }
         }
     }
 }

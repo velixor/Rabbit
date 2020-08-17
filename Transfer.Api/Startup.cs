@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Transfer.Data.Context;
+using Transfer.Domain.Extensions;
 
 namespace Transfer.Api
 {
@@ -62,6 +63,7 @@ namespace Transfer.Api
 
             app.UseSwagger();
             app.UseSwaggerUI(opt => opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Transfer microservice v1"));
+            app.SubscribeTransferCreatedEventHandler();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
